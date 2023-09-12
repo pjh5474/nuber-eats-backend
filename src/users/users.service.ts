@@ -7,7 +7,7 @@ import { User } from './entities/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 
 @Injectable()
-export class UsersSerivce {
+export class UserSerivce {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     private readonly jwtService: JwtService,
@@ -43,10 +43,15 @@ export class UsersSerivce {
       if (!passwordCorrect) {
         return { ok: false, error: 'Wrong password' };
       }
+
       const token = this.jwtService.sign(user.id);
       return { ok: true, token };
     } catch (error) {
       return { ok: false, error };
     }
+  }
+
+  async findById(id: number): Promise<User> {
+    return this.users.findOne({ where: { id } });
   }
 }
