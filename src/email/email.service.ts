@@ -6,14 +6,14 @@ import * as ejs from 'ejs';
 @Injectable()
 export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
-  async sendEmail(
+  private async sendEmail(
     to: string,
     subject: string,
     template: string,
     context: ConfirmationEmailContext,
   ) {
     const emailContent = await ejs.renderFile(
-      './email-templates/confirmation/html.ejs',
+      `./email-templates/${template}/html.ejs`,
       context,
     );
 

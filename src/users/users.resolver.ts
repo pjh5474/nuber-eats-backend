@@ -11,11 +11,11 @@ import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 import { User } from './entities/user.entity';
-import { UserSerivce } from './users.service';
+import { UserService } from './users.service';
 
 @Resolver((of) => User)
 export class UsersResolver {
-  constructor(private readonly usersService: UserSerivce) {}
+  constructor(private readonly usersService: UserService) {}
 
   @Query((returns) => User)
   @UseGuards(AuthGuard)
