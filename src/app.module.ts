@@ -5,16 +5,17 @@ import {
   RequestMethod,
 } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloDriver } from '@nestjs/apollo';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { MailerModule } from '@nestjs-modules/mailer';
 import * as Joi from 'joi'; // Joi is a JS library for validation
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleWare } from './jwt/jwt.middleware';
 import { Verification } from './users/entities/veritication.entity';
-
+import { EmailModule } from './email/email.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,6 +30,8 @@ import { Verification } from './users/entities/veritication.entity';
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
         PRIVATE_KEY: Joi.string().required(),
+        EMAIL_USER: Joi.string().required(),
+        EMAIL_APP_PASSWORD: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({
@@ -49,6 +52,19 @@ import { Verification } from './users/entities/veritication.entity';
     }),
     UsersModule,
     JwtModule.forRoot({ privateKey: process.env.PRIVATE_KEY }),
+    MailerModule.forRoot({
+      transport: {
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_APP_PASSWORD,
+        },
+      },
+      defaults: {
+        from: process.env.EMAIL_USER,
+      },
+    }),
+    EmailModule,
   ],
   controllers: [],
   providers: [],
