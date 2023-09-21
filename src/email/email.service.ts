@@ -6,32 +6,39 @@ import * as ejs from 'ejs';
 @Injectable()
 export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
-  private async sendEmail(
-    to: string,
+  async sendEmail(
     subject: string,
     template: string,
     context: ConfirmationEmailContext,
+    to?: string,
   ) {
-    const emailContent = await ejs.renderFile(
-      `./email-templates/${template}/html.ejs`,
-      context,
-    );
-
     try {
+      if (!to) throw new Error('No email to send');
+
+      const emailContent = await ejs.renderFile(
+        `./email-templates/${template}/html.ejs`,
+        context,
+      );
       await this.mailerService.sendMail({
         to,
         subject,
         html: emailContent,
       });
+      return true;
     } catch (error) {
-      console.log(error);
+      return false;
     }
   }
 
   sendVerificationEmail(email: string, code: string) {
-    this.sendEmail(email, 'Email Confirmation', 'confirmation', {
+    this.sendEmail(
+      'Email Confirmation',
+      'confirmation',
+      {
+        email,
+        code,
+      },
       email,
-      code,
-    });
+    );
   }
 }
