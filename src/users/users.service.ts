@@ -89,6 +89,14 @@ export class UserService {
     try {
       const user = await this.users.findOne({ where: { id: userId } });
       if (email) {
+        // check if email is already exist
+        const exist = await this.users.count({ where: { email } });
+        if (exist > 0) {
+          return {
+            ok: false,
+            error: 'There is a user with that email already',
+          };
+        }
         user.email = email;
         user.verified = false;
         const verification = await this.verifications.save(

@@ -13,6 +13,7 @@ const mockRepository = () => ({
   create: jest.fn(),
   findOneOrFail: jest.fn(),
   delete: jest.fn(),
+  count: jest.fn(),
 });
 
 const mockJwtService = () => ({
@@ -248,6 +249,7 @@ describe('UserService', () => {
       };
 
       usersRepository.findOne.mockResolvedValue(oldUser);
+      usersRepository.count.mockResolvedValue(0);
       verificationsRepository.create.mockReturnValue(newVerification);
       verificationsRepository.save.mockResolvedValue(newVerification);
 
@@ -255,6 +257,13 @@ describe('UserService', () => {
 
       expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
       expect(usersRepository.findOne).toHaveBeenCalledWith(findOneArgs);
+
+      expect(usersRepository.count).toHaveBeenCalledTimes(1);
+      expect(usersRepository.count).toHaveBeenCalledWith({
+        where: {
+          email: editProfileArgs.input.email,
+        },
+      });
 
       expect(verificationsRepository.create).toHaveBeenCalledWith({
         user: newUser,
@@ -268,6 +277,52 @@ describe('UserService', () => {
         newUser.email,
         newVerification.code,
       );
+
+      expect(usersRepository.save).toHaveBeenCalledTimes(1);
+      expect(usersRepository.save).toHaveBeenCalledWith(newUser);
+    });
+
+    it('should fail if email already exists', async () => {
+      const oldUser = {
+        email: 'bs@old.com',
+        verified: true,
+      };
+      const editProfileArgs = {
+        userId: 1,
+        input: { email: 'bs@new.com' },
+      };
+      const findOneArgs = {
+        where: {
+          id: editProfileArgs.userId,
+        },
+      };
+
+      usersRepository.findOne.mockResolvedValue(oldUser);
+      usersRepository.count.mockResolvedValue(1);
+      const result = await service.editProfile(
+        editProfileArgs.userId,
+        editProfileArgs.input,
+      );
+
+      expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(usersRepository.findOne).toHaveBeenCalledWith(findOneArgs);
+
+      expect(usersRepository.count).toHaveBeenCalledTimes(1);
+      expect(usersRepository.count).toHaveBeenCalledWith({
+        where: {
+          email: editProfileArgs.input.email,
+        },
+      });
+
+      expect(verificationsRepository.create).not.toHaveBeenCalled();
+      expect(verificationsRepository.save).not.toHaveBeenCalled();
+      expect(emailService.sendVerificationEmail).not.toHaveBeenCalled();
+      expect(usersRepository.save).not.toHaveBeenCalled();
+
+      expect(result).toEqual({
+        ok: false,
+        error: 'There is a user with that email already',
+      });
     });
 
     it('should change password', async () => {
