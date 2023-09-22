@@ -6,6 +6,7 @@ import { DataSource, Repository } from 'typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
+import { Verification } from 'src/users/entities/veritication.entity';
 
 const GRAPHQL_ENDPOINT = '/graphql';
 
@@ -18,6 +19,7 @@ describe('UserModule (e2e)', () => {
   let app: INestApplication;
   let jwtToken: string;
   let usersRepository: Repository<User>;
+  let verificationRepository: Repository<Verification>;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,6 +37,9 @@ describe('UserModule (e2e)', () => {
 
     app = module.createNestApplication();
     usersRepository = module.get<Repository<User>>(getRepositoryToken(User));
+    verificationRepository = module.get<Repository<Verification>>(
+      getRepositoryToken(Verification),
+    );
     await app.init();
   });
 
@@ -305,6 +310,7 @@ describe('UserModule (e2e)', () => {
   });
 
   describe('editProfile', () => {
+    const NEW_EMAIL = 'nico@nico.com';
     it('should change email', () => {
       return request(app.getHttpServer())
         .post(GRAPHQL_ENDPOINT)
@@ -313,7 +319,7 @@ describe('UserModule (e2e)', () => {
           query: `
         mutation {
           editProfile(input: {
-            email:"nico@nico.com",
+            email:"${NEW_EMAIL}",
           }) {
             ok
             error
@@ -334,7 +340,96 @@ describe('UserModule (e2e)', () => {
           expect(error).toBe(null);
         });
     });
+
+    it('should have new email', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken)
+        .send({
+          query: `
+              {
+                me {
+                  email
+                }
+              }`,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                me: { email },
+              },
+            },
+          } = res;
+          expect(email).toBe(NEW_EMAIL);
+        });
+    });
   });
 
-  it.todo('verifyEmail');
+  describe('verifyEmail', () => {
+    let verificationCode: string;
+    beforeAll(async () => {
+      const [verification] = await verificationRepository.find();
+      verificationCode = verification.code;
+    });
+
+    it('should fail on wrong verification code', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+        mutation {
+          verifyEmail(input: {
+            code: "xxxx"
+          }) {
+            ok
+            error
+          }
+        }
+      `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                verifyEmail: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toBe(false);
+          expect(error).toBe('Verification not found');
+        });
+    });
+
+    it('should verify email', async () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+          mutation {
+            verifyEmail(input: {
+              code: "${verificationCode}"
+            }) {
+              ok
+              error
+            }
+          }
+        `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                verifyEmail: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toBe(true);
+          expect(error).toBe(null);
+        });
+    });
+  });
 });
