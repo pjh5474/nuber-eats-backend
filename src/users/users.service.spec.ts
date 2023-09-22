@@ -280,6 +280,11 @@ describe('UserService', () => {
 
       expect(usersRepository.save).toHaveBeenCalledTimes(1);
       expect(usersRepository.save).toHaveBeenCalledWith(newUser);
+
+      expect(verificationsRepository.delete).toHaveBeenCalledTimes(1);
+      expect(verificationsRepository.delete).toHaveBeenCalledWith({
+        user: { id: editProfileArgs.userId },
+      });
     });
 
     it('should fail if email already exists', async () => {

@@ -303,6 +303,38 @@ describe('UserModule (e2e)', () => {
         });
     });
   });
-  it.todo('editProfile');
+
+  describe('editProfile', () => {
+    it('should change email', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken)
+        .send({
+          query: `
+        mutation {
+          editProfile(input: {
+            email:"nico@nico.com",
+          }) {
+            ok
+            error
+          }
+        }
+        `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editProfile: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toBe(true);
+          expect(error).toBe(null);
+        });
+    });
+  });
+
   it.todo('verifyEmail');
 });
