@@ -3,8 +3,9 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 import { IsString, Length } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Category } from './category.entity';
+import { User } from 'src/users/entities/user.entity';
 
-@InputType({ isAbstract: true })
+@InputType('RestaurantInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class Restaurant extends CoreEntity {
@@ -24,7 +25,14 @@ export class Restaurant extends CoreEntity {
   @IsString()
   address: string;
 
-  @ManyToOne((type) => Category, (category) => category.restaurants)
+  @ManyToOne((type) => Category, (category) => category.restaurants, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @Field((type) => Category)
   category: Category;
+
+  @ManyToOne((type) => User, (user) => user.restaurants)
+  @Field((type) => User)
+  owner: User;
 }

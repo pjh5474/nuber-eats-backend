@@ -18,6 +18,7 @@ import { Verification } from './users/entities/veritication.entity';
 import { EmailModule } from './email/email.module';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { Category } from './restaurants/entities/category.entity';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -68,6 +69,7 @@ import { Category } from './restaurants/entities/category.entity';
       },
     }),
     EmailModule,
+    RestaurantsModule,
   ],
   controllers: [],
   providers: [],
