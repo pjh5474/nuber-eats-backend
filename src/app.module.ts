@@ -19,6 +19,7 @@ import { EmailModule } from './email/email.module';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { Category } from './restaurants/entities/category.entity';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -68,6 +69,7 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
         from: process.env.EMAIL_USER,
       },
     }),
+    AuthModule,
     EmailModule,
     RestaurantsModule,
   ],

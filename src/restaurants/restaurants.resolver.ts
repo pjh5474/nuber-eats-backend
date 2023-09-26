@@ -6,13 +6,15 @@ import {
 import { Restaurant } from './entities/restaurant.entity';
 import { RestaurantsService } from './restaurants.service';
 import { AuthUser } from 'src/auth/auth-user.decorator';
-import { User } from 'src/users/entities/user.entity';
+import { User, UserRole } from 'src/users/entities/user.entity';
+import { Role } from 'src/auth/role.decorator';
 
 @Resolver((of) => Restaurant)
 export class RestaurantsResolver {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
   @Mutation((returns) => CreateRestaurantOutput)
+  @Role(['Owner'])
   createRestaurant(
     @AuthUser() authUser: User,
     @Args('input') createRestaurantInput: CreateRestaurantInput,
