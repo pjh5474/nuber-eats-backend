@@ -27,6 +27,8 @@ import {
 } from './dtos/search-restaurant.dto';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { Dish } from './entities/dish.entity';
+import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
+import { deleteDishInput, deleteDishOutput } from './dtos/delete-dish.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -312,6 +314,79 @@ export class RestaurantsService {
       return {
         ok: false,
         error: 'Could not create dish',
+      };
+    }
+  }
+
+  async editDish(
+    owner: User,
+    editDishInput: EditDishInput,
+  ): Promise<EditDishOutput> {
+    try {
+      const dish = await this.dishes.findOne({
+        where: { id: editDishInput.dishId },
+        relations: ['restaurant'],
+      });
+
+      if (!dish) {
+        return {
+          ok: false,
+          error: 'Dish not found',
+        };
+      }
+
+      if (owner.id !== dish.restaurant.ownerId) {
+        return {
+          ok: false,
+          error: 'You can not delete a dish that you do not own',
+        };
+      }
+
+      await this.dishes.save([
+        {
+          id: editDishInput.dishId,
+          ...editDishInput,
+        },
+      ]);
+      return { ok: true };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not edit dish',
+      };
+    }
+  }
+
+  async deleteDish(
+    owner: User,
+    { dishId }: deleteDishInput,
+  ): Promise<deleteDishOutput> {
+    try {
+      const dish = await this.dishes.findOne({
+        where: { id: dishId },
+        relations: ['restaurant'],
+      });
+
+      if (!dish) {
+        return {
+          ok: false,
+          error: 'Dish not found',
+        };
+      }
+
+      if (owner.id !== dish.restaurant.ownerId) {
+        return {
+          ok: false,
+          error: 'You can not delete a dish that you do not own',
+        };
+      }
+
+      await this.dishes.delete(dishId);
+      return { ok: true };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not delete dish',
       };
     }
   }
