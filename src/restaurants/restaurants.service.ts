@@ -28,7 +28,7 @@ import {
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { Dish } from './entities/dish.entity';
 import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
-import { deleteDishInput, deleteDishOutput } from './dtos/delete-dish.dto';
+import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -359,8 +359,8 @@ export class RestaurantsService {
 
   async deleteDish(
     owner: User,
-    { dishId }: deleteDishInput,
-  ): Promise<deleteDishOutput> {
+    { dishId }: DeleteDishInput,
+  ): Promise<DeleteDishOutput> {
     try {
       const dish = await this.dishes.findOne({
         where: { id: dishId },
