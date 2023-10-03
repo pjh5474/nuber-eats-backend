@@ -13,7 +13,6 @@ import * as Joi from 'joi'; // Joi is a JS library for validation
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { JwtModule } from './jwt/jwt.module';
-import { JwtMiddleWare } from './jwt/jwt.middleware';
 import { Verification } from './users/entities/veritication.entity';
 import { EmailModule } from './email/email.module';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
@@ -65,7 +64,24 @@ import { OrderItem } from './orders/entities/order-item.entity';
     GraphQLModule.forRoot({
       driver: ApolloDriver,
       autoSchemaFile: true,
-      context: ({ req }) => ({ user: req['user'] }),
+      subscriptions: {
+        'subscriptions-transport-ws': {
+          onConnect: (connectionParams) => {
+            const authToken = connectionParams['x-jwt'];
+            if (!authToken) {
+              throw new Error('Token is not valid');
+            }
+            const token = authToken;
+            return { token };
+          },
+        },
+      },
+      context: ({ req, connection }) => {
+        const TOEKEN_KEY = 'x-jwt';
+        return {
+          token: req ? req.headers[TOEKEN_KEY] : connection.context[TOEKEN_KEY],
+        };
+      },
     }),
     UsersModule,
     JwtModule.forRoot({ privateKey: process.env.PRIVATE_KEY }),
@@ -89,11 +105,4 @@ import { OrderItem } from './orders/entities/order-item.entity';
   controllers: [],
   providers: [],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleWare).forRoutes({
-      path: '/graphql',
-      method: RequestMethod.ALL,
-    });
-  }
-}
+export class AppModule {}
