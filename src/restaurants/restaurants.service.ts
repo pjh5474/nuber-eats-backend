@@ -309,7 +309,8 @@ export class RestaurantsService {
       if (owner.id !== restaurant.ownerId) {
         return {
           ok: false,
-          error: 'You can not edit a restaurant that you do not own',
+          error:
+            'You can not create a dish for a restaurant that you do not own',
         };
       }
 

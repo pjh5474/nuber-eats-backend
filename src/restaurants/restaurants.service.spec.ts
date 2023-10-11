@@ -578,7 +578,7 @@ describe('RestaurantsService', () => {
 
       expect(result).toEqual({
         ok: false,
-        error: 'You can not edit a restaurant that you do not own',
+        error: 'You can not create a dish for a restaurant that you do not own',
       });
     });
 
