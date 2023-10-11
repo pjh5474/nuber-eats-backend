@@ -36,10 +36,10 @@ export class RestaurantsService {
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
 
-    private readonly categories: CategoryRepository,
-
     @InjectRepository(Dish)
     private readonly dishes: Repository<Dish>,
+
+    private readonly categories: CategoryRepository,
   ) {}
 
   async createRestaurant(
@@ -93,14 +93,15 @@ export class RestaurantsService {
         category = await this.categories.getOrCreate(
           editRestaurantInput.categoryName,
         );
-        await this.restaurants.save([
-          {
-            id: editRestaurantInput.restaurantId,
-            ...editRestaurantInput,
-            ...(category && { category }), // if category exists, add it to the object
-          },
-        ]);
       }
+
+      await this.restaurants.save([
+        {
+          id: editRestaurantInput.restaurantId,
+          ...editRestaurantInput,
+          ...(category && { category }), // if category exists, add it to the object
+        },
+      ]);
 
       return { ok: true };
     } catch {
@@ -129,7 +130,7 @@ export class RestaurantsService {
       if (owner.id !== restaurant.ownerId) {
         return {
           ok: false,
-          error: 'You can not edit a restaurant that you do not own',
+          error: 'You can not delete a restaurant that you do not own',
         };
       }
 
@@ -344,7 +345,7 @@ export class RestaurantsService {
       if (owner.id !== dish.restaurant.ownerId) {
         return {
           ok: false,
-          error: 'You can not delete a dish that you do not own',
+          error: 'You can not edit a dish that you do not own',
         };
       }
 
