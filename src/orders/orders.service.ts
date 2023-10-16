@@ -190,7 +190,7 @@ export class OrderService {
     } catch {
       return {
         ok: false,
-        error: 'Could not get orders.',
+        error: 'Could not get orders',
       };
     }
   }
@@ -208,14 +208,14 @@ export class OrderService {
       if (!order) {
         return {
           ok: false,
-          error: 'Order not found.',
+          error: 'Order not found',
         };
       }
 
       if (!this.canSeeOrder(user, order)) {
         return {
           ok: false,
-          error: "You cant see other peoples' orders",
+          error: "You can't see other peoples' orders",
         };
       }
 
@@ -242,14 +242,14 @@ export class OrderService {
       if (!order) {
         return {
           ok: false,
-          error: 'Order not found.',
+          error: 'Order not found',
         };
       }
 
       if (!this.canSeeOrder(user, order)) {
         return {
           ok: false,
-          error: "You cant see other peoples' orders",
+          error: "You can't see other peoples' orders",
         };
       }
 
